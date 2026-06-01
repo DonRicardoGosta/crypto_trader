@@ -59,6 +59,7 @@ See [`docs/architecture.md`](docs/architecture.md).
 cp .env.example .env
 docker compose down -v
 docker compose build --no-cache
+docker compose down --remove-orphans   # régi frontend konténerek törlése
 docker compose up -d
 ```
 

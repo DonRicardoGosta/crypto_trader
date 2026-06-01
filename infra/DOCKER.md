@@ -38,6 +38,27 @@ Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációka
 
 ## Hibaelhárítás
 
+## Orphan konténerek / port 5173 foglalt
+
+Ha a compose figyelmeztet régi `frontend-realtime` / `frontend-analytics` konténerekre, vagy a `frontend` nem indul (*port is already allocated*):
+
+```bash
+docker compose down --remove-orphans
+docker rm -f crypto_trader-frontend-realtime-1 crypto_trader-frontend-analytics-1 2>/dev/null || true
+docker compose up -d --build
+```
+
+Vagy: `make docker-clean && make docker-up`
+
+Ha a 5173-at más folyamat használja (nem Docker):
+
+```bash
+# Linux
+ss -tlnp | grep 5173
+# Windows (PowerShell)
+netstat -ano | findstr :5173
+```
+
 ```bash
 docker compose ps
 docker compose logs -f migrate
