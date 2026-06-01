@@ -51,7 +51,7 @@ services:
   migrate:
     build:
       context: ..
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile.backend
     environment:
       DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
       WAIT_FOR_POSTGRES: "1"
@@ -64,7 +64,7 @@ services:
   api:
     build:
       context: ..
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile.backend
     environment: &backend_env
       DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
       KAFKA_BOOTSTRAP: redpanda:9092
@@ -86,7 +86,7 @@ services:
   realtime-ws:
     build:
       context: ..
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile.backend
     environment:
       <<: *backend_env
     command: ["trading-realtime-ws"]
@@ -100,7 +100,7 @@ services:
   db-writer:
     build:
       context: ..
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile.backend
     environment:
       <<: *backend_env
     command: ["trading-db-writer"]
@@ -114,7 +114,7 @@ services:
   engine:
     build:
       context: ..
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile.backend
     environment:
       <<: *backend_env
     command: ["trading-engine"]
@@ -132,7 +132,7 @@ services:
   frontend-realtime:
     build:
       context: ..
-      dockerfile: frontend-realtime/Dockerfile
+      dockerfile: Dockerfile.frontend-realtime
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
         VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8001/realtime}
@@ -145,7 +145,7 @@ services:
   frontend-analytics:
     build:
       context: ..
-      dockerfile: frontend-analytics/Dockerfile
+      dockerfile: Dockerfile.frontend-analytics
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     ports:
