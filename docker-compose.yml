@@ -1,8 +1,4 @@
-# Futtatás a repo gyökeréből (automatikusan olvassa a .env fájlt):
-#   cp .env.example .env
-#   docker compose down -v
-#   docker compose build --no-cache
-#   docker compose up -d
+# Gyökérből: cp .env.example .env && docker compose up -d --build
 
 services:
   postgres:
@@ -16,40 +12,50 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trading"]
+      test: ["CMD-SHELL", "pg_isready -U trading -d trading"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 15
+      start_period: 5s
 
   redpanda:
     image: redpandadata/redpanda:v24.2.4
     command:
       - redpanda
       - start
-      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
-      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
-      - --smp 1
-      - --memory 512M
+      - --mode
+      - dev-container
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:19092
+      - --smp
+      - "1"
+      - --memory
+      - 512M
       - --overprovisioned
-      - --set redpanda.auto_create_topics_enabled=true
+      - --set
+      - redpanda.auto_create_topics_enabled=true
     ports:
       - "19092:19092"
     healthcheck:
-      test: ["CMD", "rpk", "cluster", "health"]
-      interval: 10s
+      test: ["CMD-SHELL", "rpk cluster health 2>&1 | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 5s
       timeout: 10s
-      retries: 10
-      start_period: 15s
+      retries: 25
+      start_period: 40s
 
   redis:
     image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
-      timeout: 3s
-      retries: 5
+      timeout: 5s
+      retries: 10
+      start_period: 3s
 
   migrate:
     build:
@@ -57,8 +63,8 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
-      WAIT_FOR_POSTGRES: "1"
-    command: ["/bin/sh", "/app/infra/scripts/run-migrate.sh"]
+      WAIT_FOR_POSTGRES: "0"
+    entrypoint: ["/bin/sh", "/app/infra/scripts/run-migrate.sh"]
     depends_on:
       postgres:
         condition: service_healthy
@@ -72,7 +78,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
       KAFKA_BOOTSTRAP: redpanda:9092
       REDIS_URL: redis://redis:6379/0
-      SECRETS_MASTER_KEY: ${SECRETS_MASTER_KEY}
+      SECRETS_MASTER_KEY: ${SECRETS_MASTER_KEY:-dev-master-key-change-in-production-32b}
       WAIT_FOR_POSTGRES: "1"
     command: ["trading-api"]
     ports:
@@ -80,6 +86,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
       redpanda:
         condition: service_healthy
       redis:
@@ -124,11 +132,11 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      redpanda:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       api:
+        condition: service_started
+      redpanda:
+        condition: service_started
+      redis:
         condition: service_started
     restart: unless-stopped
 
@@ -137,8 +145,8 @@ services:
       context: .
       dockerfile: frontend-realtime/Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_WS_URL: ${VITE_WS_URL}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8001/realtime}
     ports:
       - "5173:80"
     depends_on:
@@ -150,7 +158,7 @@ services:
       context: .
       dockerfile: frontend-analytics/Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     ports:
       - "5174:80"
     depends_on:

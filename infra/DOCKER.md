@@ -31,7 +31,7 @@ Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációka
 | `db-writer` | — | Kafka → PostgreSQL |
 | `postgres` | 5432 | Adatbázis |
 | `redpanda` | 19092 | Kafka kompatibilis broker |
-| `redis` | 6379 | Config cache pub/sub |
+| `redis` | 6380 (host) → 6379 | Config cache pub/sub |
 
 ## Böngésző URL-ek
 
@@ -78,3 +78,20 @@ docker compose up -d postgres redpanda redis
 - `migrate` konténer kilépett 0-val? → migráció OK
 - Engine nem tradel: ellenőrizd `docker compose ... logs engine` — API kulcs és enabled stratégia kell
 - Kafka hiba: várj, amíg a Redpanda healthy (`docker compose ps`)
+
+## Hibaelhárítás
+
+**Redis / Redpanda nem indul:** gyakran port foglaltság (6379, 19092). A compose Redis-t `6380`-ra mapeli.
+
+**migrate exit 255:** nézd a logot:
+```bash
+docker compose logs migrate
+docker compose run --rm --no-deps migrate
+```
+
+**Újraépítés:**
+```bash
+docker compose down -v
+docker compose build --no-cache migrate api
+docker compose up -d
+```
