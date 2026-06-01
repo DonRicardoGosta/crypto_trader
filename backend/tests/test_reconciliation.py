@@ -2,8 +2,7 @@ from decimal import Decimal
 
 from trading_platform.core.enums import PositionSide
 from trading_platform.core.ledger import SimulatedLedger
-from trading_platform.core.models import OrderIntent, PositionLeg
-from trading_platform.core.enums import OrderSide, OrderType
+from trading_platform.core.models import PositionLeg
 from trading_platform.engine.reconciliation import reconcile
 
 

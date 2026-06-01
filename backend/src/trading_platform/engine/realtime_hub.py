@@ -19,6 +19,11 @@ class RealtimeHub:
         async with self._lock:
             self._clients.add(ws)
 
+    async def register_client(self, ws: WebSocket) -> None:
+        """Register without accept (for tests)."""
+        async with self._lock:
+            self._clients.add(ws)
+
     async def disconnect(self, ws: WebSocket) -> None:
         async with self._lock:
             self._clients.discard(ws)

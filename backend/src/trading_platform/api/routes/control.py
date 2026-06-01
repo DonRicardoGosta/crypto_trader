@@ -6,30 +6,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from trading_platform.adapters.persistence.models import StrategyRow
 from trading_platform.api.deps import get_session
+from trading_platform.engine import state as engine_state
 from trading_platform.engine.realtime_hub import hub
 
 router = APIRouter()
 
-_engine_stop_flag: bool = False
-
 
 @router.get("/status")
 async def engine_status():
-    return {"emergency_stop": _engine_stop_flag}
+    return {"emergency_stop": engine_state.is_emergency_stop()}
 
 
 @router.post("/emergency-stop")
 async def emergency_stop():
-    global _engine_stop_flag
-    _engine_stop_flag = True
+    await engine_state.set_emergency_stop(True)
     await hub.broadcast("emergency_stop", {"active": True})
     return {"emergency_stop": True}
 
 
 @router.post("/emergency-stop/reset")
 async def reset_emergency_stop():
-    global _engine_stop_flag
-    _engine_stop_flag = False
+    await engine_state.set_emergency_stop(False)
     await hub.broadcast("emergency_stop", {"active": False})
     return {"emergency_stop": False}
 

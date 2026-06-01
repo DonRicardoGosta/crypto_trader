@@ -3,9 +3,29 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: trading
+          POSTGRES_PASSWORD: trading
+          POSTGRES_DB: trading
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql+asyncpg://trading:trading@localhost:5432/trading
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: cd backend && pip install -e ".[dev]" && ruff check src tests && pytest -q
+      - name: Install
+        run: cd backend && pip install -e ".[dev]"
+      - name: Ruff
+        run: cd backend && ruff check src tests
+      - name: Mypy
+        run: cd backend && mypy src/trading_platform || true
+      - name: Pytest
+        run: cd backend && pytest -q
+      - name: Alembic check
+        run: cd infra/migrations && pip install alembic asyncpg sqlalchemy && alembic upgrade head

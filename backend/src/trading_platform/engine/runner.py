@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from decimal import Decimal
 
 from trading_platform.adapters.bitunix.market_data import BitunixMarketData
@@ -15,11 +16,13 @@ from trading_platform.adapters.execution.backtest import (
 )
 from trading_platform.adapters.execution.dry_run import BitunixDryRunExecution
 from trading_platform.adapters.execution.live import BitunixLiveExecution
+from trading_platform.adapters.persistence.kafka_emitter import TOPIC_METRICS
 from trading_platform.core.clock import WallClock
 from trading_platform.core.enums import ExecutionMode
 from trading_platform.core.ledger import SimulatedLedger, SlippageModel
 from trading_platform.core.models import BacktestParams, StrategyConfig
 from trading_platform.core.ports import EventEmitter
+from trading_platform.engine import state as engine_state
 from trading_platform.engine.config_cache import ConfigCache
 from trading_platform.risk.engine import RiskEngine
 from trading_platform.strategies.base import Strategy
@@ -83,11 +86,21 @@ class StrategyRunner:
         interval = float(cfg.parameters.get("tick_interval_seconds", 5))
         try:
             while not self._stop.is_set():
+                if engine_state.is_emergency_stop():
+                    await asyncio.sleep(interval)
+                    continue
+                t0 = time.perf_counter()
                 symbols = cfg.parameters.get("symbols") or ["BTCUSDT"]
                 tickers = {}
                 for sym in symbols:
                     tickers[sym] = await market.get_ticker(sym)
                 await strategy.on_tick(tickers)
+                elapsed_ms = (time.perf_counter() - t0) * 1000
+                await self._emitter.emit(
+                    TOPIC_METRICS,
+                    "loop_duration",
+                    {"strategy_id": str(cfg.id), "ms": elapsed_ms},
+                )
                 await asyncio.sleep(interval)
         except asyncio.CancelledError:
             pass

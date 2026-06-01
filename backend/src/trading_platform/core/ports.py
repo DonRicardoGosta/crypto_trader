@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from datetime import datetime
 from typing import Any
 
@@ -40,7 +40,7 @@ class MarketDataPort(ABC):
         ...
 
     @abstractmethod
-    async def stream_tickers(self, symbols: list[str]) -> AsyncIterator[Ticker]:
+    def stream_tickers(self, symbols: list[str]) -> AsyncGenerator[Ticker, None]:
         ...
 
 

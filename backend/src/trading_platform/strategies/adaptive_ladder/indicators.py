@@ -20,8 +20,8 @@ def rsi(klines: list[Kline], period: int = 14) -> Decimal:
         else:
             gains.append(Decimal("0"))
             losses.append(abs(change))
-    avg_gain = sum(gains) / period if gains else Decimal("0")
-    avg_loss = sum(losses) / period if losses else Decimal("1")
+    avg_gain = sum(gains) / Decimal(period) if gains else Decimal("0")
+    avg_loss = sum(losses) / Decimal(period) if losses else Decimal("1")
     if avg_loss == 0:
         return Decimal("100")
     rs = avg_gain / avg_loss
@@ -39,4 +39,4 @@ def volatility_score(klines: list[Kline], period: int = 20) -> Decimal:
             returns.append(abs(r))
     if not returns:
         return Decimal("0")
-    return sum(returns) / len(returns) * Decimal("100")
+    return sum(returns) / Decimal(len(returns)) * Decimal("100")
