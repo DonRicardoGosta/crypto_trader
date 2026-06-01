@@ -21,6 +21,7 @@ dependencies = [
     "websockets>=14.0",
     "cryptography>=44.0.0",
     "python-multipart>=0.0.17",
+    "redis>=5.2.0",
 ]
 
 [project.optional-dependencies]

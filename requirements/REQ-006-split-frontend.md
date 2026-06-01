@@ -12,9 +12,9 @@ Két külön Vite alkalmazás: realtime csak WebSocket + minimál REST; analytic
 
 ## Elfogadási kritériumok
 
-- [ ] `frontend-realtime` nem importál history/query modulokat
-- [ ] `frontend-analytics` nem kötődik live WS streamhez
-- [ ] Külön dev portok (5173, 5174)
+- [x] `frontend-realtime` nem importál history/query modulokat
+- [x] `frontend-analytics` nem kötődik live WS streamhez
+- [x] Külön dev portok (5173, 5174)
 
 ## Kapcsolódó kód
 

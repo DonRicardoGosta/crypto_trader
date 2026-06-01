@@ -12,10 +12,10 @@ Automatikus coin discovery, lépcsőzetes pozíciók (több leg ugyanarra a symb
 
 ## Elfogadási kritériumok
 
-- [ ] Top N coin volume/volatility alapján
-- [ ] Több párhuzamos pozíció ugyanazon symbolon
-- [ ] Leverage bump margin hibára
-- [ ] Trailing stop / max drawdown per symbol
+- [x] Top N coin volume/volatility alapján
+- [x] Több párhuzamos pozíció ugyanazon symbolon
+- [x] Leverage bump margin hibára
+- [x] Trailing stop / max drawdown per symbol
 
 ## Kapcsolódó kód
 

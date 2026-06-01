@@ -12,9 +12,9 @@
 
 ## Elfogadási kritériumok
 
-- [ ] `RiskEngine.propose_order` elutasít ha túllépi a max tőkét
-- [ ] `min_investment_usd` nem változik szorzó emeléskor
-- [ ] Insufficient margin → leverage +1, retry, majd `leverage_bump_exhausted` esemény
+- [x] `RiskEngine.propose_order` elutasít ha túllépi a max tőkét
+- [x] `min_investment_usd` nem változik szorzó emeléskor
+- [x] Insufficient margin → leverage +1, retry, majd `leverage_bump_exhausted` esemény
 
 ## Kapcsolódó kód
 

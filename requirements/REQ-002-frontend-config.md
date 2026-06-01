@@ -12,9 +12,9 @@ API kulcsok, stratégia paraméterek és üzleti beállítások a frontend analy
 
 ## Elfogadási kritériumok
 
-- [ ] `POST/PUT /api/credentials` titkosítva tárolja a kulcsokat
-- [ ] `PUT /api/strategies/{id}` frissíti a paramétereket
-- [ ] Engine config cache-ből olvas, nem env-ből (kivéve infra)
+- [x] `POST/PUT /api/credentials` titkosítva tárolja a kulcsokat
+- [x] `PUT /api/strategies/{id}` frissíti a paramétereket
+- [x] Engine config cache-ből olvas, nem env-ből (kivéve infra)
 
 ## Kapcsolódó kód
 

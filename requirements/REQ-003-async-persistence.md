@@ -12,9 +12,9 @@ A trading engine hot path nem blokkol adatbázis írásra. Események Kafka topi
 
 ## Elfogadási kritériumok
 
-- [ ] Order/fill/error események Kafka produceren keresztül mennek
-- [ ] `db-writer` batch insert + indexelt táblák
-- [ ] Kafka leállásakor engine tovább fut bounded queue-val
+- [x] Order/fill/error események Kafka produceren keresztül mennek
+- [x] `db-writer` batch insert + indexelt táblák
+- [x] Kafka leállásakor engine tovább fut bounded queue-val
 
 ## Kapcsolódó kód
 

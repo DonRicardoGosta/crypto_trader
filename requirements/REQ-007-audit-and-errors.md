@@ -12,9 +12,9 @@ Minden fontos esemény (trade, config, mode switch) és hiba (exchange, engine, 
 
 ## Elfogadási kritériumok
 
-- [ ] Exchange HTTP/WS hibák → `trading.errors` → `errors` tábla
-- [ ] Config változás → `trading.audit` → `events` tábla
-- [ ] Indexek: `(source, ts)`, `(event_type, ts)`, `(severity, ts)`
+- [x] Exchange HTTP/WS hibák → `trading.errors` → `errors` tábla
+- [x] Config változás → `trading.audit` → `events` tábla
+- [x] Indexek: `(source, ts)`, `(event_type, ts)`, `(severity, ts)`
 
 ## Kapcsolódó kód
 

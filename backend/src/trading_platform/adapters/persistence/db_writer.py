@@ -22,6 +22,7 @@ from trading_platform.adapters.persistence.models import (
     EventRow,
     FillRow,
     OrderRow,
+    PositionRow,
 )
 from trading_platform.config import settings
 
@@ -103,6 +104,8 @@ class DbWriter:
             await self._upsert_order(session, payload, ts)
         elif event_type == "fill":
             await self._insert_fill(session, payload, ts)
+        elif event_type == "position":
+            await self._upsert_position(session, payload, ts)
 
     async def _upsert_order(
         self, session: AsyncSession, payload: dict[str, Any], ts: datetime
@@ -140,5 +143,25 @@ class DbWriter:
             price=float(payload["price"]),
             fee=float(payload.get("fee", 0)),
             ts=ts,
+        )
+        session.add(row)
+
+
+    async def _upsert_position(
+        self, session: AsyncSession, payload: dict[str, Any], ts: datetime
+    ) -> None:
+        if not payload.get("strategy_id"):
+            return
+        row = PositionRow(
+            id=uuid.uuid4(),
+            strategy_id=uuid.UUID(payload["strategy_id"]),
+            leg_id=payload.get("leg_id", str(uuid.uuid4())),
+            symbol=payload["symbol"],
+            side=payload.get("side", "long"),
+            quantity=float(payload.get("quantity", 0)),
+            entry_price=float(payload.get("entry_price", 0)),
+            unrealized_pnl=float(payload.get("unrealized_pnl", 0)),
+            ladder_step=int(payload.get("step", 0)),
+            updated_at=ts,
         )
         session.add(row)

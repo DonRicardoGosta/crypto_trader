@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
     realtime_ws_port: int = 8001
     config_cache_ttl_seconds: float = 2.0
+    redis_url: str = "redis://localhost:6379/0"
     event_queue_max_size: int = 10_000
 
 

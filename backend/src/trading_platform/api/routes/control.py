@@ -48,6 +48,24 @@ async def set_strategy_mode(
     return {"strategy_id": strategy_id, "mode": mode}
 
 
+@router.post("/reconcile/{strategy_id}")
+async def reconcile_strategy(strategy_id: str):
+    """Reconcile live exchange positions vs ledger (dry-run uses ledger only)."""
+    from trading_platform.adapters.bitunix.rest import BitunixRestClient
+    from trading_platform.adapters.execution.live import BitunixLiveExecution
+    from trading_platform.adapters.persistence.kafka_emitter import InMemoryEventEmitter
+    from trading_platform.core.ledger import SimulatedLedger
+    from trading_platform.engine.reconciliation import reconcile_live
+
+    emitter = InMemoryEventEmitter()
+    client = BitunixRestClient(emitter=emitter)
+    ledger = SimulatedLedger()
+    execution = BitunixLiveExecution(client, emitter, strategy_id)
+    result = await reconcile_live(execution, ledger)
+    await client.close()
+    return result
+
+
 @router.get("/strategies/enabled")
 async def list_enabled(session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(StrategyRow).where(StrategyRow.enabled.is_(True)))

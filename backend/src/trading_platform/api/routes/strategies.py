@@ -51,6 +51,10 @@ async def create_strategy(body: StrategyCreate, session: AsyncSession = Depends(
         )
     )
     await session.commit()
+    from trading_platform.engine.redis_cache import get_notifier
+    n = get_notifier()
+    await n.connect()
+    await n.notify_refresh()
     return StrategyOut(
         id=row.id,
         name=row.name,

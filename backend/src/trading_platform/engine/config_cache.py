@@ -25,6 +25,7 @@ class ConfigCache:
     async def start(self) -> None:
         self._running = True
         asyncio.create_task(self._poll_loop())
+        asyncio.create_task(self._redis_subscribe())
 
     async def stop(self) -> None:
         self._running = False
@@ -68,3 +69,18 @@ class ConfigCache:
 
     def get(self, strategy_id: uuid.UUID) -> StrategyConfig | None:
         return self._strategies.get(strategy_id)
+
+
+    async def _redis_subscribe(self) -> None:
+        from trading_platform.engine.redis_cache import get_notifier
+
+        notifier = get_notifier()
+        await notifier.connect()
+
+        async def _refresh():
+            await self.refresh()
+
+        try:
+            await notifier.subscribe_loop(_refresh)
+        except Exception:
+            pass
