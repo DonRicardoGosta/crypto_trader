@@ -90,6 +90,10 @@ async def update_strategy(
             risk.leverage_multiplier = body.risk.leverage_multiplier
             risk.max_leverage_multiplier = body.risk.max_leverage_multiplier
     await session.commit()
+    from trading_platform.engine.redis_cache import get_notifier
+    n = get_notifier()
+    await n.connect()
+    await n.notify_refresh()
     return StrategyOut(
         id=row.id,
         name=row.name,
