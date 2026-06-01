@@ -12,11 +12,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trading -d trading"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U trading -d trading || exit 1"]
+      interval: 3s
       timeout: 5s
-      retries: 15
-      start_period: 5s
+      retries: 40
+      start_period: 60s
 
   redpanda:
     image: redpandadata/redpanda:v24.2.4
@@ -63,8 +63,16 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
-      WAIT_FOR_POSTGRES: "0"
-    entrypoint: ["/bin/sh", "/app/infra/scripts/run-migrate.sh"]
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        export PYTHONPATH=/app/backend/src
+        cd /app/infra/migrations
+        echo "Waiting for PostgreSQL..."
+        until python -c "import socket;s=socket.socket();s.settimeout(2);s.connect(('postgres',5432));s.close()"; do sleep 2; done
+        echo "Running alembic upgrade head..."
+        alembic -c /app/infra/migrations/alembic.ini upgrade head
+        echo "Migrations complete."
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,9 +97,9 @@ services:
       postgres:
         condition: service_healthy
       redpanda:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   realtime-ws:

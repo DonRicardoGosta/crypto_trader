@@ -17,6 +17,7 @@ ENV PYTHONUNBUFFERED=1
 
 COPY infra/scripts /app/infra/scripts
 COPY infra/scripts/docker-entrypoint.sh /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /app/infra/scripts/*.sh /docker-entrypoint.sh 2>/dev/null || true
 RUN chmod +x /app/infra/scripts/*.sh
 RUN chmod +x /docker-entrypoint.sh
 
