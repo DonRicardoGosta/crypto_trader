@@ -1,0 +1,12 @@
+.git
+.gitignore
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
+**/node_modules
+**/dist
+.cursor
+*.md
+!backend/README.md

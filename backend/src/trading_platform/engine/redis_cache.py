@@ -12,8 +12,10 @@ CHANNEL = "trading:config:refresh"
 
 
 class RedisConfigNotifier:
-    def __init__(self, url: str = "redis://localhost:6379/0") -> None:
-        self._url = url
+    def __init__(self, url: str | None = None) -> None:
+        from trading_platform.config import settings
+
+        self._url = url or settings.redis_url
         self._redis: aioredis.Redis | None = None
 
     async def connect(self) -> None:

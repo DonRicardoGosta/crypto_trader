@@ -56,3 +56,26 @@ All modes call the same `Strategy` + `RiskEngine`; only `ExecutionPort` / `Marke
 `adaptive_ladder` — auto coin discovery, ladder positions, leverage bump on margin errors.
 
 See [`docs/architecture.md`](docs/architecture.md).
+
+
+## Docker (teljes stack)
+
+A repo gyökeréből:
+
+```bash
+cp infra/.env.example infra/.env
+docker compose -f infra/docker-compose.yml --env-file infra/.env up -d --build
+```
+
+| Szolgáltatás | URL |
+|--------------|-----|
+| Analytics UI | http://localhost:5174 |
+| Realtime UI | http://localhost:5173 |
+| API | http://localhost:8000 |
+| WebSocket | ws://localhost:8001/realtime |
+| PostgreSQL | localhost:5432 |
+| Kafka (Redpanda) | localhost:19092 |
+
+Leállítás: `docker compose -f infra/docker-compose.yml down`
+
+Logok: `docker compose -f infra/docker-compose.yml logs -f engine api`

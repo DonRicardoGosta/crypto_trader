@@ -1,3 +1,6 @@
+# Teljes stack: docker compose -f infra/docker-compose.yml up -d --build
+# Futtatás a repo gyökeréből: docker compose -f infra/docker-compose.yml --env-file infra/.env up -d --build
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -13,7 +16,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U trading"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redpanda:
     image: redpandadata/redpanda:v24.2.4
@@ -31,13 +34,125 @@ services:
     healthcheck:
       test: ["CMD", "rpk", "cluster", "health"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
+      start_period: 15s
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
+      WAIT_FOR_POSTGRES: "1"
+    command: ["/bin/sh", "/app/infra/scripts/run-migrate.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment: &backend_env
+      DATABASE_URL: postgresql+asyncpg://trading:trading@postgres:5432/trading
+      KAFKA_BOOTSTRAP: redpanda:9092
+      REDIS_URL: redis://redis:6379/0
+      SECRETS_MASTER_KEY: ${SECRETS_MASTER_KEY:-dev-master-key-change-in-production-32b}
+      WAIT_FOR_POSTGRES: "1"
+    command: ["trading-api"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redpanda:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  realtime-ws:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      <<: *backend_env
+    command: ["trading-realtime-ws"]
+    ports:
+      - "8001:8001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  db-writer:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      <<: *backend_env
+    command: ["trading-db-writer"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redpanda:
+        condition: service_healthy
+    restart: unless-stopped
+
+  engine:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      <<: *backend_env
+    command: ["trading-engine"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redpanda:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend-realtime:
+    build:
+      context: ..
+      dockerfile: frontend-realtime/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8001/realtime}
+    ports:
+      - "5173:80"
+    depends_on:
+      - realtime-ws
+    restart: unless-stopped
+
+  frontend-analytics:
+    build:
+      context: ..
+      dockerfile: frontend-analytics/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    ports:
+      - "5174:80"
+    depends_on:
+      - api
+    restart: unless-stopped
 
 volumes:
   pgdata:
