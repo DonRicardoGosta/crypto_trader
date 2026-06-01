@@ -148,29 +148,18 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  frontend-realtime:
+  frontend:
     build:
       context: .
-      dockerfile: frontend-realtime/Dockerfile
+      dockerfile: frontend/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
         VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8001/realtime}
     ports:
       - "5173:80"
     depends_on:
-      - realtime-ws
-    restart: unless-stopped
-
-  frontend-analytics:
-    build:
-      context: .
-      dockerfile: frontend-analytics/Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
-    ports:
-      - "5174:80"
-    depends_on:
       - api
+      - realtime-ws
     restart: unless-stopped
 
 volumes:

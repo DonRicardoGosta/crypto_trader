@@ -8,7 +8,7 @@
 
 ## Leírás
 
-API kulcsok, stratégia paraméterek és üzleti beállítások a frontend analytics UI-ból szerkeszthetők. Csak infrastruktúra (DB URL, Kafka, titkosítási master key) marad env-ben.
+API kulcsok, stratégia paraméterek és üzleti beállítások a web UI Beállítások oldaláról szerkeszthetők. Csak infrastruktúra (DB URL, Kafka, titkosítási master key) marad env-ben.
 
 ## Elfogadási kritériumok
 
@@ -19,4 +19,4 @@ API kulcsok, stratégia paraméterek és üzleti beállítások a frontend analy
 ## Kapcsolódó kód
 
 - `backend/src/trading_platform/api/routes/config.py`
-- `frontend-analytics/`
+- `frontend/src/pages/SettingsPage.tsx`

@@ -23,8 +23,7 @@ Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációka
 
 | Konténer | Port (host) | Leírás |
 |----------|-------------|--------|
-| `frontend-analytics` | 5174 | Beállítások, history, backtest |
-| `frontend-realtime` | 5173 | Live WebSocket dashboard |
+| `frontend` | 5173 | Egyetlen UI: élő WS, beállítások, előzmények |
 | `api` | 8000 | REST API |
 | `realtime-ws` | 8001 | WebSocket gateway |
 | `engine` | — | Stratégia futtató |
@@ -33,65 +32,22 @@ Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációka
 | `redpanda` | 19092 | Kafka kompatibilis broker |
 | `redis` | 6380 (host) → 6379 | Config cache pub/sub |
 
-## Böngésző URL-ek
+## Böngésző
 
-- Analytics: http://localhost:5174
-- Realtime: http://localhost:5173
-- API docs: http://localhost:8000/docs
-
-A frontend build során a `VITE_API_URL` és `VITE_WS_URL` a **host gépről** érhető el (localhost), nem a Docker belső hálózatról — így a böngésződ eléri az API-t.
-
-Ha más gépről nyitod meg, állítsd az `.env`-ben:
-
-```env
-VITE_API_URL=http://<szerver-ip>:8000
-VITE_WS_URL=ws://<szerver-ip>:8001/realtime
-```
-
-majd: `docker compose up -d --build frontend-realtime frontend-analytics`
-
-## Hasznos parancsok
-
-```bash
-# Logok
-docker compose logs -f engine api db-writer
-
-# Leállítás (adat megmarad)
-docker compose down
-
-# Teljes törlés (PostgreSQL volume is)
-docker compose down -v
-
-# Csak infrastruktúra (DB, Kafka, Redis) — fejlesztéshez helyi Pythonnal
-docker compose up -d postgres redpanda redis
-```
-
-## Bitunix API kulcsok
-
-1. Nyisd meg http://localhost:5174
-2. Add meg az API kulcsokat → mentés (titkosítva a PostgreSQL-ben)
-3. Hozz létre stratégiát (Adaptive Ladder, dry_run mód ajánlott elsőre)
-4. Az `engine` konténer a cache-ből olvassa a beállításokat
-
-## Hibakeresés
-
-- `migrate` konténer kilépett 0-val? → migráció OK
-- Engine nem tradel: ellenőrizd `docker compose ... logs engine` — API kulcs és enabled stratégia kell
-- Kafka hiba: várj, amíg a Redpanda healthy (`docker compose ps`)
+- **http://localhost:5173** — teljes felület (Élő / Beállítások / Előzmények)
 
 ## Hibaelhárítás
 
-**Redis / Redpanda nem indul:** gyakran port foglaltság (6379, 19092). A compose Redis-t `6380`-ra mapeli.
-
-**migrate exit 255:** nézd a logot:
 ```bash
-docker compose logs migrate
-docker compose run --rm --no-deps migrate
+docker compose ps
+docker compose logs -f migrate
+docker compose logs -f frontend api engine
 ```
 
-**Újraépítés:**
+Teljes reset (adat törlése):
+
 ```bash
 docker compose down -v
-docker compose build --no-cache migrate api
+docker compose build --no-cache
 docker compose up -d
 ```

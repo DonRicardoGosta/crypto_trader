@@ -11,8 +11,8 @@ flowchart LR
   EventEmitter --> Kafka
   EventEmitter --> RealtimeHub
   Kafka --> DbWriter --> PostgreSQL
-  AnalyticsUI --> PostgreSQL
-  RealtimeUI --> RealtimeHub
+  WebUI --> PostgreSQL
+  WebUI --> RealtimeHub
 ```
 
 ## Services
@@ -42,7 +42,7 @@ All modes use the same `Strategy` subclass and `RiskEngine.propose_order()`.
 
 1. Create `strategies/my_strategy/strategy.py` subclassing `Strategy`
 2. Register in `strategies/registry.py`
-3. Create row via analytics UI with `strategy_type=my_strategy`
+3. Create row via web UI (Beállítások) with `strategy_type=my_strategy`
 
 ## Configuration
 

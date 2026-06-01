@@ -1,6 +1,6 @@
 # Bitunix Futures Trading Platform
 
-Monorepo for automated Bitunix futures trading with **unified execution** (live / dry-run / backtest), **Kafka → PostgreSQL** async persistence, and **split frontends** (realtime WebSocket vs analytics DB).
+Monorepo for automated Bitunix futures trading with **unified execution** (live / dry-run / backtest), **Kafka → PostgreSQL** async persistence, and a **single web UI** (live WebSocket + settings/history).
 
 ## Structure
 
@@ -8,40 +8,36 @@ Monorepo for automated Bitunix futures trading with **unified execution** (live 
 |------|-------------|
 | [`requirements/`](requirements/) | Jira-style requirement docs (REQ-001 … REQ-007) |
 | [`backend/`](backend/) | Python engine, API, Bitunix adapters |
-| [`frontend-realtime/`](frontend-realtime/) | WebSocket dashboard (port 5173) |
-| [`frontend-analytics/`](frontend-analytics/) | Settings, history, backtests (port 5174) |
-| [`infra/`](infra/) | Docker Compose (Postgres, Redpanda, Redis), Alembic |
+| [`frontend/`](frontend/) | Unified React UI (port 5173) |
+| [`infra/`](infra/) | Alembic migrations, Docker notes |
 
 ## Quick start
 
 ```bash
-cd infra && docker compose up -d
-cd ../backend && pip install -e ".[dev]"
-cp ../.env.example ../.env
+cp .env.example .env
+docker compose up -d --build
+```
+
+Open **http://localhost:5173** — Élő (WebSocket), Beállítások, Előzmények.
+
+Local dev (backend + frontend separately):
+
+```bash
+cd backend && pip install -e ".[dev]"
 export $(grep -v '^#' ../.env | xargs)
 cd ../infra/migrations && alembic upgrade head
-```
-
-Services (separate terminals):
-
-```bash
-trading-api           # http://localhost:8000
-trading-realtime-ws   # ws://localhost:8001/realtime
+trading-api
+trading-realtime-ws
 trading-db-writer
 trading-engine
-```
 
-Frontends:
-
-```bash
-cd frontend-realtime && npm install && npm run dev
-cd frontend-analytics && npm install && npm run dev
+cd frontend && npm install && npm run dev
 ```
 
 ## Configuration
 
 - **Env only:** `DATABASE_URL`, `KAFKA_BOOTSTRAP`, `SECRETS_MASTER_KEY`
-- **Frontend/UI:** API keys, strategy params, risk limits → PostgreSQL via analytics API
+- **UI:** API keys, strategy params, risk limits → PostgreSQL via REST API
 
 ## Modes
 
@@ -57,10 +53,7 @@ All modes call the same `Strategy` + `RiskEngine`; only `ExecutionPort` / `Marke
 
 See [`docs/architecture.md`](docs/architecture.md).
 
-
 ## Docker (teljes stack)
-
-A repo gyökeréből (a `.env` automatikusan betöltődik):
 
 ```bash
 cp .env.example .env
@@ -71,13 +64,12 @@ docker compose up -d
 
 | Szolgáltatás | URL |
 |--------------|-----|
-| Analytics UI | http://localhost:5174 |
-| Realtime UI | http://localhost:5173 |
+| Web UI | http://localhost:5173 |
 | API | http://localhost:8000 |
 | WebSocket | ws://localhost:8001/realtime |
 | PostgreSQL | localhost:5432 |
 | Kafka (Redpanda) | localhost:19092 |
 
-Leállítás: `docker compose -f infra/docker-compose.yml down`
+Leállítás: `docker compose down`
 
-Logok: `docker compose -f infra/docker-compose.yml logs -f engine api`
+Logok: `docker compose logs -f engine api frontend`

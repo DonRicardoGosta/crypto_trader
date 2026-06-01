@@ -1,4 +1,4 @@
-# REQ-006: Frontend szétválasztás (WS vs DB)
+# REQ-006: Frontend — élő vs előzmények szétválasztás
 
 | Mező | Érték |
 |------|-------|
@@ -8,15 +8,15 @@
 
 ## Leírás
 
-Két külön Vite alkalmazás: realtime csak WebSocket + minimál REST; analytics csak REST/DB lekérdezések.
+Egyetlen Vite/React alkalmazás, oldal szinten szétválasztva: az **Élő** oldal csak WebSocket + minimál REST (vészleállítás); a **Beállítások** és **Előzmények** oldalak REST/DB lekérdezéseket használnak.
 
 ## Elfogadási kritériumok
 
-- [x] `frontend-realtime` nem importál history/query modulokat
-- [x] `frontend-analytics` nem kötődik live WS streamhez
-- [x] Külön dev portok (5173, 5174)
+- [x] Élő oldal nem tölt history/backtest adatot mountkor
+- [x] Előzmények oldal nem kötődik folyamatos WS streamhez
+- [x] Egy dev/build port (5173) és egy Docker szolgáltatás (`frontend`)
+- [x] Egységes, sötét trading UI (sidebar navigáció)
 
 ## Kapcsolódó kód
 
-- `frontend-realtime/`
-- `frontend-analytics/`
+- `frontend/` — `LivePage`, `SettingsPage`, `HistoryPage`
