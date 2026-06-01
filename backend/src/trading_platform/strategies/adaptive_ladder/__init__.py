@@ -1,0 +1,1 @@
+"""Adaptive ladder strategy."""
