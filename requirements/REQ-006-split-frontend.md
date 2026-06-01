@@ -3,7 +3,7 @@
 | Mező | Érték |
 |------|-------|
 | **ID** | REQ-006 |
-| **Státusz** | in_progress |
+| **Státusz** | done |
 | **Prioritás** | P1 |
 
 ## Leírás

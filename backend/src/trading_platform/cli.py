@@ -29,6 +29,7 @@ def run_realtime_ws():
 async def _run_engine():
     from sqlalchemy import select
 
+    from trading_platform.adapters.persistence.broadcast_emitter import BroadcastingEventEmitter
     from trading_platform.adapters.persistence.kafka_emitter import KafkaEventEmitter
     from trading_platform.adapters.persistence.models import ApiCredentialRow
     from trading_platform.api.deps import async_session
@@ -37,7 +38,7 @@ async def _run_engine():
     from trading_platform.engine.config_cache import ConfigCache
     from trading_platform.engine.runner import StrategyRunner
 
-    emitter = KafkaEventEmitter()
+    emitter = BroadcastingEventEmitter(KafkaEventEmitter())
     await emitter.start()
     cache = ConfigCache()
     api_key, secret = "", ""

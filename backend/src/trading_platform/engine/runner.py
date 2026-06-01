@@ -46,6 +46,8 @@ class StrategyRunner:
     async def start(self) -> None:
         await self._cache.start()
         for cfg in self._cache.get_enabled():
+            if cfg.mode == ExecutionMode.BACKTEST:
+                continue  # backtests run via API only
             self._tasks.append(asyncio.create_task(self._run_strategy(cfg)))
 
     async def stop(self) -> None:
