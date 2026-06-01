@@ -11,10 +11,10 @@ Minden szolgáltatás egy `docker compose` paranccsal indul.
 
 ```bash
 # A repo gyökeréből
-cp infra/.env.example infra/.env
-# Szerkeszd infra/.env — minimum: SECRETS_MASTER_KEY (32+ karakter élesben)
+cp .env.example .env
+# Szerkeszd .env — minimum: SECRETS_MASTER_KEY (32+ karakter élesben)
 
-docker compose -f infra/docker-compose.yml --env-file infra/.env up -d --build
+docker compose up -d --build
 ```
 
 Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációkat, utána indulnak az app konténerek.
@@ -41,29 +41,29 @@ Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációka
 
 A frontend build során a `VITE_API_URL` és `VITE_WS_URL` a **host gépről** érhető el (localhost), nem a Docker belső hálózatról — így a böngésződ eléri az API-t.
 
-Ha más gépről nyitod meg, állítsd az `infra/.env`-ben:
+Ha más gépről nyitod meg, állítsd az `.env`-ben:
 
 ```env
 VITE_API_URL=http://<szerver-ip>:8000
 VITE_WS_URL=ws://<szerver-ip>:8001/realtime
 ```
 
-majd: `docker compose -f infra/docker-compose.yml up -d --build frontend-realtime frontend-analytics`
+majd: `docker compose up -d --build frontend-realtime frontend-analytics`
 
 ## Hasznos parancsok
 
 ```bash
 # Logok
-docker compose -f infra/docker-compose.yml logs -f engine api db-writer
+docker compose logs -f engine api db-writer
 
 # Leállítás (adat megmarad)
-docker compose -f infra/docker-compose.yml down
+docker compose down
 
 # Teljes törlés (PostgreSQL volume is)
-docker compose -f infra/docker-compose.yml down -v
+docker compose down -v
 
 # Csak infrastruktúra (DB, Kafka, Redis) — fejlesztéshez helyi Pythonnal
-docker compose -f infra/docker-compose.yml up -d postgres redpanda redis
+docker compose up -d postgres redpanda redis
 ```
 
 ## Bitunix API kulcsok

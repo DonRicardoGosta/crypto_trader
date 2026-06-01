@@ -60,11 +60,13 @@ See [`docs/architecture.md`](docs/architecture.md).
 
 ## Docker (teljes stack)
 
-A repo gyökeréből:
+A repo gyökeréből (a `.env` automatikusan betöltődik):
 
 ```bash
-cp infra/.env.example infra/.env
-docker compose -f infra/docker-compose.yml --env-file infra/.env up -d --build
+cp .env.example .env
+docker compose down -v
+docker compose build --no-cache
+docker compose up -d
 ```
 
 | Szolgáltatás | URL |
