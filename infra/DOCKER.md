@@ -14,7 +14,8 @@ Minden szolgáltatás egy `docker compose` paranccsal indul.
 cp .env.example .env
 # Szerkeszd .env — minimum: SECRETS_MASTER_KEY (32+ karakter élesben)
 
-docker compose up -d --build
+docker compose down --remove-orphans
+docker compose up -d --build --remove-orphans
 ```
 
 Első indításkor a `migrate` szolgáltatás lefuttatja az Alembic migrációkat, utána indulnak az app konténerek.

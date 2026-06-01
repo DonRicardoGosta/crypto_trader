@@ -2,7 +2,9 @@
 
 docker-up:
 	cp -n .env.example .env 2>/dev/null || true
-	docker compose up -d --build
+	docker compose down --remove-orphans 2>/dev/null || true
+	-docker rm -f crypto_trader-frontend-realtime-1 crypto_trader-frontend-analytics-1 2>/dev/null || true
+	docker compose up -d --build --remove-orphans
 
 docker-down:
 	docker compose down --remove-orphans
